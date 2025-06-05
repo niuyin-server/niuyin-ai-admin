@@ -22,6 +22,9 @@ const routes = [
             },
             {
                 path: "model/role", component: () => import("@/views/model/ModelRole.vue")
+            },
+            {
+                path: "model/tool", component: () => import("@/views/model/Tool.vue")
             }
             // {
             //     path: "model",
