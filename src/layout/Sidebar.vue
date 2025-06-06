@@ -55,6 +55,7 @@ const handleSelect = (key, keyPath) => {
         <el-menu-item index="/model/key">AI密钥</el-menu-item>
         <el-menu-item index="/model/model">AI模型</el-menu-item>
         <el-menu-item index="/model/role">AI角色</el-menu-item>
+        <el-menu-item index="/model/tool">AI工具</el-menu-item>
       </el-sub-menu>
       <el-menu-item index="/login">
         <el-icon>
