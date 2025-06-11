@@ -114,6 +114,7 @@ const form = ref({
   category: undefined,
   description: undefined,
   systemMessage: undefined,
+  chatPrologue: undefined,
   publicFlag: undefined,
   stateFlag: undefined,
   sort: undefined
@@ -133,6 +134,7 @@ const reset = () => {
     category: undefined,
     description: undefined,
     systemMessage: undefined,
+    chatPrologue: undefined,
     publicFlag: undefined,
     stateFlag: undefined,
     sort: undefined
@@ -301,6 +303,7 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="类别" prop="category" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="描述" prop="description" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="对话开场白" prop="chatPrologue" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="上下文" prop="systemMessage" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="是否公开" prop="publicFlag" align="center" width="120">
         <template #default="scope">
@@ -353,7 +356,7 @@ onMounted(() => {
                    @current-change="handleCurrentChange"/>
 
     <el-dialog :title="title" v-model="dialogVisible" width="50%">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="名称" prop="name">
@@ -424,6 +427,10 @@ onMounted(() => {
         <el-form-item label="上下文" prop="systemMessage">
           <el-input v-model="form.systemMessage" placeholder="请输入角色上下文" type="textarea" show-word-limit
                     maxlength="1024"/>
+        </el-form-item>
+        <el-form-item label="对话开场白" prop="chatPrologue">
+          <el-input v-model="form.chatPrologue" placeholder="请输入对话开场白" type="textarea" show-word-limit
+                    maxlength="200"/>
         </el-form-item>
         <el-row :gutter="16">
           <el-col :span="12">
