@@ -306,8 +306,8 @@ onMounted(() => {
         <template #default="scope">
           <el-switch
               v-model="scope.row.publicFlag"
-              active-value="0"
-              inactive-value="1"
+              active-value="1"
+              inactive-value="0"
               disabled
           ></el-switch>
         </template>
