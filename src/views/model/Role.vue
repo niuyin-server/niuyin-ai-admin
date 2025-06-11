@@ -1,45 +1,46 @@
 <script setup>
-import {onMounted, reactive, ref} from "vue";
+import {onBeforeMount, onMounted, reactive, ref} from "vue";
 import {
-  createApiKey,
-  deleteApiKey,
-  getApiKey,
-  getApiKeyPage,
-  getPlatformList,
-  updateApiKey,
-  updateApiKeyState
-} from "@/api/model/apiKey.js";
+  createModelRole,
+  deleteModelRole,
+  getModelRole,
+  getModelRolePage,
+  updateModelRole,
+  updateModelRoleState
+} from "@/api/model/role.js";
 import {Delete, Edit, Plus, Refresh, Search} from '@element-plus/icons-vue'
+import {ElMessage} from "element-plus";
+import {getModelSimpleList} from "@/api/model/model.js";
 
 const queryDTO = reactive({
   pageNum: 1,
   pageSize: 10,
   name: null,
-  platform: null,
+  category: null,
+  publicFlag: null,
   stateFlag: null
 })
 
-const platformList = ref([])
-
-const initPlatformList = async () => {
-  const res = await getPlatformList()
-  platformList.value = res.data.data
+const modelList = ref([])
+const initModelList = async () => {
+  const res = await getModelSimpleList()
+  modelList.value = res.data.data
 }
 
 const handleCurrentChange = (v) => {
   queryDTO.pageNum = v
-  initModelKeyPage()
+  initModelRolePage()
 }
 const handleSizeChange = (v) => {
   queryDTO.pageSize = v
-  initModelKeyPage()
+  initModelRolePage()
 }
 const loading = ref(false)
 const list = ref([])
 const total = ref(0)
-const initModelKeyPage = async () => {
+const initModelRolePage = async () => {
   loading.value = true
-  const {data} = await getApiKeyPage(queryDTO)
+  const {data} = await getModelRolePage(queryDTO)
   list.value = data.data.rows
   total.value = data.data.total
   loading.value = false
@@ -56,13 +57,25 @@ const stateFlagEnum = [
   }
 ]
 
+const publicFlagEnum = [
+  {
+    label: "私有",
+    value: '0'
+  },
+  {
+    label: "公开",
+    value: '1'
+  }
+]
+
 const resetQuery = () => {
   queryDTO.pageNum = 1
   queryDTO.pageSize = 10
   queryDTO.name = null
-  queryDTO.platform = null
+  queryDTO.category = null
+  queryDTO.publicFlag = null
   queryDTO.stateFlag = null
-  initModelKeyPage()
+  initModelRolePage()
 }
 
 const multiple = ref(true)
@@ -80,25 +93,30 @@ const handleSelectionChange = (selection) => {
 const handleAdd = () => {
   reset()
   form.value.stateFlag = '0'
+  form.value.publicFlag = '1'
   dialogVisible.value = true;
-  title.value = "新增AI密钥";
+  title.value = "新增AI角色";
 }
 /** 修改按钮操作 */
 const handleUpdate = async (id) => {
   reset()
-  const res = await getApiKey(id)
+  const res = await getModelRole(id)
   Object.assign(form.value, res.data.data)
   dialogVisible.value = true;
-  title.value = "修改AI密钥";
+  title.value = "修改AI角色";
 }
 
 const form = ref({
   id: undefined,
+  modelId: undefined,
   name: undefined,
-  platform: undefined,
-  url: undefined,
+  avatar: undefined,
+  category: undefined,
+  description: undefined,
+  systemMessage: undefined,
+  publicFlag: undefined,
   stateFlag: undefined,
-  apiKey: undefined,
+  sort: undefined
 })
 const formRef = ref()
 const reset = () => {
@@ -109,11 +127,15 @@ const reset = () => {
   // 重置 form 为空
   form.value = {
     id: undefined,
+    modelId: undefined,
     name: undefined,
-    apiKey: undefined,
-    platform: undefined,
-    url: undefined,
+    avatar: undefined,
+    category: undefined,
+    description: undefined,
+    systemMessage: undefined,
+    publicFlag: undefined,
     stateFlag: undefined,
+    sort: undefined
   };
 }
 
@@ -125,49 +147,53 @@ const rules = {
 };
 
 const dialogVisible = ref(false)
-const title = ref('新增AI密钥')
+const title = ref('新增AI角色')
 
 const submitForm = () => {
   formRef.value.validate(async valid => {
     if (valid) {
       if (form.value.id) {
-        await updateApiKey(form.value)
+        await updateModelRole(form.value)
       } else {
-        await createApiKey(form.value)
+        await createModelRole(form.value)
       }
       dialogVisible.value = false;
-      await initModelKeyPage()
+      await initModelRolePage()
     }
   })
 }
 
 const handleDelete = async (id) => {
-  const res = await deleteApiKey(id)
+  const res = await deleteModelRole(id)
   if (res.data.code === 200) {
-    await initModelKeyPage()
+    await initModelRolePage()
   }
 }
 
 const handleStatusChange = async (row) => {
-  await updateApiKeyState({
+  await updateModelRoleState({
     id: row.id,
     stateFlag: row.stateFlag
   })
-  await initModelKeyPage()
+  ElMessage.success("操作成功")
+  await initModelRolePage()
 }
 
-const getPlatform= (platform)=>{
-  return platformList.value.find(item => item.value === platform).label
+const getModelByScope = (modelId) => {
+  return modelList.value.find(item => item.id === modelId)?.name
 }
+
+onBeforeMount(() => {
+  initModelList()
+})
 
 onMounted(() => {
-  initPlatformList()
-  initModelKeyPage()
+  initModelRolePage()
 })
 </script>
 
 <template>
-  <div class="  p-4" style="width: calc(100% - 200px)">
+  <div class="p-4" style="width: calc(100% - 200px)">
     <div class="flex flex-row justify-between">
       <el-form :model="queryDTO" ref="queryForm" :inline="true">
         <el-form-item label="名称" prop="name">
@@ -175,18 +201,26 @@ onMounted(() => {
               v-model="queryDTO.name"
               placeholder="请输入名称"
               clearable
-              @keyup.enter.native="initModelKeyPage"
+              @keyup.enter.native="initModelRolePage"
           />
         </el-form-item>
-        <el-form-item label="平台" prop="platform">
+        <el-form-item label="类别" prop="category">
+          <el-input
+              v-model="queryDTO.category"
+              placeholder="请输入类别"
+              clearable
+              @keyup.enter.native="initModelRolePage"
+          />
+        </el-form-item>
+        <el-form-item label="是否公开" prop="publicFlag">
           <el-select
-              v-model="queryDTO.platform"
-              style="width: 200px"
-              placeholder="请选择平台"
+              v-model="queryDTO.publicFlag"
+              style="width: 120px"
+              placeholder="是否公开"
               clearable
           >
             <el-option
-                v-for="dict in platformList"
+                v-for="dict in publicFlagEnum"
                 :key="dict.value"
                 :label="dict.label"
                 :value="dict.value"
@@ -208,9 +242,8 @@ onMounted(() => {
             />
           </el-select>
         </el-form-item>
-
         <el-form-item>
-          <el-button type="primary" :icon="Search" @click="initModelKeyPage">搜索</el-button>
+          <el-button type="primary" :icon="Search" @click="initModelRolePage">搜索</el-button>
           <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
         </el-form-item>
       </el-form>
@@ -251,13 +284,34 @@ onMounted(() => {
     <el-table v-loading="loading" :data="list" border @selectionChange="handleSelectionChange">
       <!--      <el-table-column type="selection" width="55" align="center"/>-->
       <el-table-column label="名称" prop="name" :show-overflow-tooltip="true" align="center"/>
-      <el-table-column label="apiKey" prop="apiKey" :show-overflow-tooltip="true" align="center"/>
-      <el-table-column label="平台" prop="platform" :show-overflow-tooltip="true" align="center">
+      <el-table-column label="模型" prop="modelId" :show-overflow-tooltip="true" align="center">
         <template #default="scope">
-          <el-tag type="primary">{{ getPlatform(scope.row.platform) }}</el-tag>
+          <el-tag>{{ getModelByScope(scope.row.modelId) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="url" prop="url" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="头像" prop="avatar" width="100" align="center">
+        <template #default="scope">
+          <!--          <el-avatar :src="scope.row.avatar" :size="50"></el-avatar>-->
+          <el-avatar :size="50" :src="scope.row.avatar">
+            <img
+                src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
+                alt=""/>
+          </el-avatar>
+        </template>
+      </el-table-column>
+      <el-table-column label="类别" prop="category" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="描述" prop="description" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="上下文" prop="systemMessage" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="是否公开" prop="publicFlag" align="center" width="120">
+        <template #default="scope">
+          <el-switch
+              v-model="scope.row.publicFlag"
+              active-value="1"
+              inactive-value="0"
+              disabled
+          ></el-switch>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="stateFlag" align="center" width="120">
         <template #default="scope">
           <el-switch
@@ -268,6 +322,7 @@ onMounted(() => {
           ></el-switch>
         </template>
       </el-table-column>
+      <el-table-column label="排序" prop="sort" align="center" width="120"/>
       <el-table-column label="创建时间" sortable prop="createTime" align="center" width="240"/>
       <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
         <template #default="scope">
@@ -301,34 +356,51 @@ onMounted(() => {
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-row :gutter="16">
           <el-col :span="12">
-
             <el-form-item label="名称" prop="name">
               <el-input v-model="form.name" placeholder="请输入名称"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-
-            <el-form-item label="平台" prop="platform">
-              <el-select
-                  v-model="form.platform"
-                  placeholder="请选择平台"
-                  clearable
-              >
-                <el-option
-                    v-for="dict in platformList"
-                    :key="dict.value"
-                    :label="dict.label"
-                    :value="dict.value"
-                />
-              </el-select>
+            <el-form-item label="头像" prop="avatar">
+              <el-input v-model="form.avatar" placeholder="请输入头像"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
-
-            <el-form-item label="密钥" prop="apiKey">
-              <el-input v-model="form.apiKey" placeholder="请输入密钥"/>
+            <el-form-item label="模型" prop="modelId">
+              <el-select
+                  v-model="form.modelId"
+                  placeholder="请选择模型"
+                  clearable
+              >
+                <el-option
+                    v-for="dict in modelList"
+                    :key="dict.id"
+                    :label="dict.name"
+                    :value="dict.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="类别" prop="category">
+              <el-input v-model="form.category" placeholder="请输入类别"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="是否公开" prop="publicFlag">
+              <el-radio-group v-model="form.publicFlag" disabled>
+                <el-radio
+                    v-for="dict in publicFlagEnum"
+                    border
+                    :key="dict.value"
+                    :label="dict.value"
+                >{{ dict.label }}
+                </el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -345,9 +417,23 @@ onMounted(() => {
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="url" prop="url">
-          <el-input v-model="form.url" placeholder="请输入自定义url"/>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="form.description" placeholder="请输入描述" type="textarea" show-word-limit
+                    maxlength="200"/>
         </el-form-item>
+        <el-form-item label="上下文" prop="systemMessage">
+          <el-input v-model="form.systemMessage" placeholder="请输入角色上下文" type="textarea" show-word-limit
+                    maxlength="1024"/>
+        </el-form-item>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="排序" prop="sort">
+              <el-input-number :min="0" style="width: 100%" v-model="form.sort" placeholder="请输入排序"/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <el-button @click="submitForm" type="primary">确 定</el-button>

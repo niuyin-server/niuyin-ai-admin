@@ -63,12 +63,13 @@ onMounted(() => {
 
 <style scoped>
 .header-container {
-  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.1), 0 0 4px -2px rgb(0 0 0 / 0.1);
+  /*box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.1), 0 0 4px -2px rgb(0 0 0 / 0.1);*/
+  border-bottom: 1px solid var(--el-menu-border-color);
 }
 
-.dark .header-container {
+/*.dark .header-container {
   box-shadow: 0 2px 6px -2px rgba(188, 185, 185, 0.1), 0 0 4px -2px rgba(32, 31, 31, 0.1);
-}
+}*/
 
 .router-link {
   text-decoration: none;

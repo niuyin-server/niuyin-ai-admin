@@ -15,13 +15,13 @@ const routes = [
                 path: "dashboard", name: "dashboard", component: () => import("@/views/dashboard/Index.vue")
             },
             {
-                path: "model/key", component: () => import("@/views/model/ModelKey.vue")
+                path: "model/key", component: () => import("@/views/model/Key.vue")
             },
             {
                 path: "model/model", component: () => import("@/views/model/Model.vue")
             },
             {
-                path: "model/role", component: () => import("@/views/model/ModelRole.vue")
+                path: "model/role", component: () => import("@/views/model/Role.vue")
             },
             {
                 path: "model/tool", component: () => import("@/views/model/Tool.vue")

@@ -4,19 +4,43 @@ import {useRouter} from 'vue-router';
 
 const router = useRouter();
 
-const menusTopList = [
-  {id: 0, name: "首页", class: "#icon-index", link: "/"},
-  {id: 1, name: "推荐", class: "#icon-discover", link: "/discover"},
-  {id: 2, name: "热门", class: "#icon-hotVideo", link: "/hotVideo"},
-  {id: 3, name: "登录", class: "#icon-hotVideo", link: "/login"},
-]
 import {
-  Document,
-  Menu as IconMenu,
+  House,
+  Monitor,
   Location,
   Setting,
+  Key, MagicStick, ChromeFilled, User
 } from '@element-plus/icons-vue'
 
+// 动态菜单配置
+const menuData = ref([
+  {
+    index: '/',
+    title: '首页',
+    icon: House
+  },
+  {
+    index: '/dashboard',
+    title: '工作台',
+    icon: Monitor
+  },
+  {
+    index: '/model',
+    title: '模型管理',
+    icon: Location,
+    children: [
+      {index: '/model/key', title: 'AI密钥', icon: Key},
+      {index: '/model/model', title: 'AI模型', icon: ChromeFilled},
+      {index: '/model/role', title: 'AI角色', icon: User},
+      {index: '/model/tool', title: 'AI工具', icon: MagicStick}
+    ]
+  },
+  {
+    index: '/login',
+    title: '登录',
+    icon: Setting
+  }
+]);
 const isCollapse = ref(false)
 // 激活index绑定当前路由
 // activeIndex.value = router.currentRoute.value.path
@@ -30,45 +54,45 @@ const handleSelect = (key, keyPath) => {
 </script>
 
 <template>
-  <div>
-    <el-menu :default-active="activeIndex" class="el-menu-vertical-demo" :collapse="isCollapse"
-             @select="handleSelect">
-      <el-menu-item index="/">
+  <el-menu
+      :default-active="activeIndex"
+      class="el-menu-vertical-demo"
+      :collapse="isCollapse"
+      @select="handleSelect"
+  >
+    <template v-for="item in menuData" :key="item.index">
+      <!-- 普通菜单项 -->
+      <el-menu-item
+          v-if="!item.children"
+          :index="item.index"
+      >
         <el-icon>
-          <setting/>
+          <component :is="item.icon"/>
         </el-icon>
-        <template #title>首页</template>
+        <template #title>{{ item.title }}</template>
       </el-menu-item>
-      <el-menu-item index="/dashboard">
-        <el-icon>
-          <setting/>
-        </el-icon>
-        <template #title>工作台</template>
-      </el-menu-item>
-      <el-sub-menu index="/model">
+
+      <!-- 子菜单 -->
+      <el-sub-menu v-else :index="item.index">
         <template #title>
           <el-icon>
-            <location/>
+            <component :is="item.icon"/>
           </el-icon>
-          <span>模型管理</span>
+          <span>{{ item.title }}</span>
         </template>
-        <el-menu-item index="/model/key">AI密钥</el-menu-item>
-        <el-menu-item index="/model/model">AI模型</el-menu-item>
-        <el-menu-item index="/model/role">AI角色</el-menu-item>
-        <el-menu-item index="/model/tool">AI工具</el-menu-item>
+        <el-menu-item
+            v-for="child in item.children"
+            :key="child.index"
+            :index="child.index"
+        >
+          <el-icon>
+            <component :is="child.icon"/>
+          </el-icon>
+          {{ child.title }}
+        </el-menu-item>
       </el-sub-menu>
-      <el-menu-item index="/login">
-        <el-icon>
-          <setting/>
-        </el-icon>
-        <template #title>登录</template>
-      </el-menu-item>
-    </el-menu>
-    <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
-      <el-radio-button :value="false">e</el-radio-button>
-      <el-radio-button :value="true">c</el-radio-button>
-    </el-radio-group>
-  </div>
+    </template>
+  </el-menu>
 </template>
 
 <style scoped>

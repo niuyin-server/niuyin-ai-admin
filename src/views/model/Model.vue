@@ -209,7 +209,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="  p-4" style="width: calc(100% - 200px)">
+  <div class="p-4" style="width: calc(100% - 200px)">
     <div class="flex flex-row justify-between">
       <el-form :model="queryDTO" ref="queryForm" :inline="true">
         <el-form-item label="名称" prop="name">
