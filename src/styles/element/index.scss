@@ -50,3 +50,7 @@ $--colors: (
 .el-dialog {
   border-radius: 1rem !important;
 }
+
+.el-popover {
+  --el-popover-border-radius: 16px !important;
+}

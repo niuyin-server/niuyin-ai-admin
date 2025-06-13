@@ -318,15 +318,15 @@ const isDark = useDark();
         </template>
       </el-table-column>
       <el-table-column label="图标" prop="avatar" width="100" align="center"/>
-<!--        <template #default="scope">-->
+      <!--        <template #default="scope">-->
 
-<!--          <el-avatar :size="50" :src="scope.row.avatar">-->
-<!--            <img-->
-<!--                src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"-->
-<!--                alt=""/>-->
-<!--          </el-avatar>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+      <!--          <el-avatar :size="50" :src="scope.row.avatar">-->
+      <!--            <img-->
+      <!--                src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"-->
+      <!--                alt=""/>-->
+      <!--          </el-avatar>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
       <el-table-column label="类别" prop="categoryIds" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="描述" prop="description" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="对话开场白" prop="chatPrologue" :show-overflow-tooltip="true" align="center"/>
@@ -391,9 +391,16 @@ const isDark = useDark();
           </el-col>
           <el-col :span="12">
             <el-form-item label="图标" prop="avatar">
-              <el-input v-model="form.avatar" placeholder="请选择图标" disabled/>
-              <EmojiPicker :native="true" @select="onVue3EmojiPicker" :theme="isDark?'dark':'light'"/>
-              <!--              <el-input v-model="form.avatar" placeholder="请输入图标"/>-->
+              <el-popover
+                  trigger="hover"
+                  placement="bottom-start"
+                  width="302"
+              >
+                <EmojiPicker :native="true" @select="onVue3EmojiPicker" :theme="isDark?'dark':'light'"/>
+                <template #reference>
+                  <el-input style="width: 42px" v-model="form.avatar" disabled/>
+                </template>
+              </el-popover>
             </el-form-item>
           </el-col>
         </el-row>
