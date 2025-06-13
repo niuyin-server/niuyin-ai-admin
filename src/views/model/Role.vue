@@ -11,12 +11,14 @@ import {
 import {Delete, Edit, Plus, Refresh, Search} from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 import {getModelSimpleList} from "@/api/model/model.js";
+import {getToolSimpleList} from "@/api/model/tool.js";
+import {getModelAgentCategorySimpleList} from "@/api/model/agentCategory.js";
 
 const queryDTO = reactive({
   pageNum: 1,
   pageSize: 10,
   name: null,
-  category: null,
+  categoryIds: null,
   publicFlag: null,
   stateFlag: null
 })
@@ -111,7 +113,7 @@ const form = ref({
   modelId: undefined,
   name: undefined,
   avatar: undefined,
-  category: undefined,
+  categoryIds: undefined,
   description: undefined,
   systemMessage: undefined,
   chatPrologue: undefined,
@@ -131,7 +133,7 @@ const reset = () => {
     modelId: undefined,
     name: undefined,
     avatar: undefined,
-    category: undefined,
+    categoryIds: undefined,
     description: undefined,
     systemMessage: undefined,
     chatPrologue: undefined,
@@ -146,6 +148,15 @@ const rules = {
     {required: true, message: '请输入名称', trigger: 'blur'},
     {min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur'}
   ],
+  modelId: [
+    {required: true, message: '请选择模型', trigger: 'change'}
+  ],
+  categoryIds: [
+    {required: true, message: '请选择类别', trigger: 'change'}
+  ],
+  systemMessage: [
+    {required: true, message: '请输入系统上下文', trigger: 'blur'}
+  ]
 };
 
 const dialogVisible = ref(false)
@@ -185,13 +196,48 @@ const getModelByScope = (modelId) => {
   return modelList.value.find(item => item.id === modelId)?.name
 }
 
+const toolOptions = ref(null)
+const initToolSimpleList = async () => {
+  const res = await getToolSimpleList()
+  toolOptions.value = res.data.data
+}
+
+const agentCategoryOptions = ref([])
+const initAgentCategorySimpleList = async () => {
+  const res = await getModelAgentCategorySimpleList()
+  agentCategoryOptions.value = res.data.data
+}
+
 onBeforeMount(() => {
+  initAgentCategorySimpleList()
+  initToolSimpleList()
   initModelList()
 })
 
 onMounted(() => {
   initModelRolePage()
 })
+
+import EmojiPicker from "vue3-emoji-picker";
+import "vue3-emoji-picker/css";
+import {useDark} from "@vueuse/core";
+
+const onVue3EmojiPicker = (emoji) => {
+
+  console.log(emoji)
+  form.value.avatar = emoji.i
+  /* 结果示例
+  {
+      i: "ernes", // 表情图标
+      n: ["kissing face"],
+      r: "1f61a", // 包含肤色
+      t: "neutral", // 肤色
+      u: "1f61a" // 不带肤色
+  }
+  */
+};
+
+const isDark = useDark();
 </script>
 
 <template>
@@ -260,26 +306,6 @@ onMounted(() => {
           >新增
           </el-button>
         </el-col>
-        <!--      <el-col :span="1.5">-->
-        <!--        <el-button-->
-        <!--            type="warning"-->
-        <!--            plain-->
-        <!--            :icon="Edit"-->
-        <!--            :disabled="multiple"-->
-        <!--            @click="handleUpdate"-->
-        <!--        >修改-->
-        <!--        </el-button>-->
-        <!--      </el-col>-->
-        <!--      <el-col :span="1.5">-->
-        <!--        <el-button-->
-        <!--            type="danger"-->
-        <!--            plain-->
-        <!--            :icon="Delete"-->
-        <!--            :disabled="single"-->
-        <!--            @click="handleDelete"-->
-        <!--        >删除-->
-        <!--        </el-button>-->
-        <!--      </el-col>-->
       </el-row>
     </div>
     <!-- 数据 -->
@@ -291,17 +317,17 @@ onMounted(() => {
           <el-tag>{{ getModelByScope(scope.row.modelId) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="头像" prop="avatar" width="100" align="center">
-        <template #default="scope">
-          <!--          <el-avatar :src="scope.row.avatar" :size="50"></el-avatar>-->
-          <el-avatar :size="50" :src="scope.row.avatar">
-            <img
-                src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"
-                alt=""/>
-          </el-avatar>
-        </template>
-      </el-table-column>
-      <el-table-column label="类别" prop="category" :show-overflow-tooltip="true" align="center"/>
+      <el-table-column label="图标" prop="avatar" width="100" align="center"/>
+<!--        <template #default="scope">-->
+
+<!--          <el-avatar :size="50" :src="scope.row.avatar">-->
+<!--            <img-->
+<!--                src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png"-->
+<!--                alt=""/>-->
+<!--          </el-avatar>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+      <el-table-column label="类别" prop="categoryIds" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="描述" prop="description" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="对话开场白" prop="chatPrologue" :show-overflow-tooltip="true" align="center"/>
       <el-table-column label="上下文" prop="systemMessage" :show-overflow-tooltip="true" align="center"/>
@@ -364,8 +390,10 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="头像" prop="avatar">
-              <el-input v-model="form.avatar" placeholder="请输入头像"/>
+            <el-form-item label="图标" prop="avatar">
+              <el-input v-model="form.avatar" placeholder="请选择图标" disabled/>
+              <EmojiPicker :native="true" @select="onVue3EmojiPicker" :theme="isDark?'dark':'light'"/>
+              <!--              <el-input v-model="form.avatar" placeholder="请输入图标"/>-->
             </el-form-item>
           </el-col>
         </el-row>
@@ -387,8 +415,15 @@ onMounted(() => {
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="类别" prop="category">
-              <el-input v-model="form.category" placeholder="请输入类别"/>
+            <el-form-item label="类别" prop="categoryIds">
+              <el-select v-model="form.categoryIds" multiple placeholder="请选择类别">
+                <el-option
+                    v-for="dict in agentCategoryOptions"
+                    :key="dict.id"
+                    :label="dict.name"
+                    :value="dict.id"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -432,6 +467,27 @@ onMounted(() => {
           <el-input v-model="form.chatPrologue" placeholder="请输入对话开场白" type="textarea" show-word-limit
                     maxlength="200"/>
         </el-form-item>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="工具" prop="toolIds">
+              <el-select
+                  v-model="form.toolIds"
+                  multiple
+                  collapse-tags
+                  collapse-tags-tooltip
+                  placeholder="请选择工具"
+                  style="width: 100%"
+              >
+                <el-option
+                    v-for="item in toolOptions"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="排序" prop="sort">

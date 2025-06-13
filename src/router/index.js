@@ -24,6 +24,9 @@ const routes = [
                 path: "model/role", component: () => import("@/views/model/Role.vue")
             },
             {
+                path: "model/agentCategory", component: () => import("@/views/model/AgentCategory.vue")
+            },
+            {
                 path: "model/tool", component: () => import("@/views/model/Tool.vue")
             }
             // {

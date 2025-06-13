@@ -31,7 +31,8 @@ const menuData = ref([
     children: [
       {index: '/model/key', title: 'AI密钥', icon: Key},
       {index: '/model/model', title: 'AI模型', icon: ChromeFilled},
-      {index: '/model/role', title: 'AI角色', icon: User},
+      {index: '/model/role', title: 'AI智能体', icon: User},
+      {index: '/model/agentCategory', title: 'AI智能体分类', icon: User},
       {index: '/model/tool', title: 'AI工具', icon: MagicStick}
     ]
   },

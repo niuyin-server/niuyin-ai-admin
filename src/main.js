@@ -19,6 +19,8 @@ import "vue3-json-viewer/dist/index.css";
 
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+import '@/styles/iconfont.css'
+
 // pinia
 import { createPinia } from 'pinia'
 const pinia = createPinia()
